@@ -28,14 +28,14 @@ private class CaseOrchestrator_Test {
         insert testCase;
         // Query the inserted case to get the auto-generated CaseNumber
         Case insertedCase = [SELECT CaseNumber, Status FROM Case WHERE Id = :testCase.Id LIMIT 1];
-        String status = CaseOrchestrator.getCaseStatusByNumber(insertedCase.CaseNumber);
-        System.assertEquals('New', status, 'Status should be New');
+        Map<String, Object> result = CaseOrchestrator.getCaseStatusByNumber(insertedCase.CaseNumber);
+        System.assertEquals('New', result.get('status'), 'Status should be New');
     }
 
     @isTest
-    static void testGetCaseStatusWithInvalidCaseNumberReturnsNull() {
-        String status = CaseOrchestrator.getCaseStatusByNumber('999999'); // unlikely to exist
-        System.assertEquals(null, status, 'Status should be null for invalid CaseNumber');
+    static void testGetCaseStatusWithInvalidCaseNumberReturnsNotFound() {
+        Map<String, Object> result = CaseOrchestrator.getCaseStatusByNumber('999999'); // unlikely to exist
+        System.assertEquals('Case not found', result.get('status'), 'Should return "Case not found" for invalid CaseNumber');
     }
 
     @isTest
