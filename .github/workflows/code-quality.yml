@@ -34,10 +34,8 @@ jobs:
 
       - name: Run ESLint with reporting
         run: |
-          npx eslint **/{aura,lwc}/**/*.js \
-            --format json \
-            --output-file eslint-report.json || true
-          npx eslint **/{aura,lwc}/**/*.js
+          npm run lint -- --format json --output-file eslint-report.json || true
+          npm run lint
 
       - name: Install PMD
         run: |
