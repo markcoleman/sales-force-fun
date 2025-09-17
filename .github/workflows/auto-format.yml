@@ -1,22 +1,17 @@
 ---
-name: Auto Format Code
+name: Format Check
 
 "on":
   pull_request:
     types: [opened, synchronize]
 
 jobs:
-  format:
+  format-check:
     runs-on: ubuntu-latest
-    if: >
-      github.event.pull_request.head.repo.full_name == github.repository
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          ref: ${{ github.head_ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,29 +22,17 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check if formatting is needed
-        id: check-format
+      - name: Check code formatting
         run: |
-          if ! npm run prettier:verify; then
-            echo "needs_formatting=true" >> $GITHUB_OUTPUT
+          echo "Checking code formatting with Prettier..."
+          if npm run prettier:verify; then
+            echo "✅ All files are properly formatted!"
           else
-            echo "needs_formatting=false" >> $GITHUB_OUTPUT
-          fi
-        continue-on-error: true
-
-      - name: Format code
-        if: steps.check-format.outputs.needs_formatting == 'true'
-        run: npm run prettier
-
-      - name: Commit formatted code
-        if: steps.check-format.outputs.needs_formatting == 'true'
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "Auto-format code with Prettier"
-            git push
+            echo "❌ Some files need formatting. Please run 'npm run prettier' locally."
+            echo ""
+            echo "The pre-commit hooks should automatically format your code when you commit."
+            echo "If you're seeing this error, make sure husky is properly installed:"
+            echo "  npm install"
+            echo "  npm run prepare"
+            exit 1
           fi
