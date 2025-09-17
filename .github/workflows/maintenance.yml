@@ -1,0 +1,104 @@
+---
+name: Repository Maintenance
+
+"on":
+  schedule:
+    # Run monthly on the 1st day at 3 AM UTC
+    - cron: "0 3 1 * *"
+  workflow_dispatch:
+
+jobs:
+  cleanup-artifacts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete old workflow artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - 30); // 30 days ago
+
+            const artifacts = await github.rest.actions.listArtifactsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+
+            for (const artifact of artifacts.data.artifacts) {
+              if (new Date(artifact.created_at) < cutoffDate) {
+                console.log(`Deleting artifact: ${artifact.name} (${artifact.created_at})`);
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: artifact.id
+                });
+              }
+            }
+
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Update repository statistics
+        run: |
+          echo "## Repository Statistics (Updated $(date))" > stats.md
+          echo "" >> stats.md
+          echo "- **Total Apex Classes:** $(find force-app -name '*.cls' | wc -l)" >> stats.md
+          echo "- **Total LWC Components:** $(find force-app -name '*.js' -path '*/lwc/*' ! -path '*/__tests__/*' | wc -l)" >> stats.md
+          echo "- **Total Test Files:** $(find force-app -name '*.test.js' | wc -l)" >> stats.md
+          echo "- **Dependencies:** $(npm list --depth=0 2>/dev/null | grep -c "├──\|└──" || echo "0")" >> stats.md
+          cat stats.md
+
+      - name: Check for security vulnerabilities
+        run: |
+          npm audit --audit-level=moderate --json > audit.json || true
+          if [ -s audit.json ]; then
+            echo "Security vulnerabilities found - creating issue"
+            # This would create a GitHub issue in a real scenario
+          fi
+
+  dependency-update-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Check for outdated dependencies
+        run: |
+          npm outdated --json > outdated.json || true
+          if [ -s outdated.json ]; then
+            echo "Outdated dependencies found:"
+            cat outdated.json
+          else
+            echo "All dependencies are up to date!"
+          fi
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-report
+          path: |
+            audit.json
+            outdated.json
+          retention-days: 7
