@@ -1,5 +1,30 @@
 # Salesforce DX Project: Next Steps
 
+[![CodeQL](https://github.com/markcoleman/sales-force-fun/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/markcoleman/sales-force-fun/actions/workflows/codeql-analysis.yml)
+[![Security Scan](https://github.com/markcoleman/sales-force-fun/actions/workflows/security-scan.yml/badge.svg)](https://github.com/markcoleman/sales-force-fun/actions/workflows/security-scan.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/markcoleman/sales-force-fun/badge)](https://securityscorecards.dev/viewer/?uri=github.com/markcoleman/sales-force-fun)
+
+## 🔒 Security
+
+This repository implements comprehensive security measures including:
+
+- **Automated Security Scanning**: CodeQL analysis, dependency vulnerability scanning
+- **Dependabot**: Automated dependency updates with security focus
+- **Secret Scanning**: GitHub Advanced Security features enabled
+- **Security Policy**: See [SECURITY.md](SECURITY.md) for our security policy and reporting procedures
+- **Continuous Monitoring**: Daily security scans and weekly comprehensive analysis
+
+### Security Features
+
+- ✅ CodeQL code analysis
+- ✅ Dependency vulnerability alerts
+- ✅ Secret scanning and push protection
+- ✅ Automated security updates via Dependabot
+- ✅ OpenSSF Scorecard monitoring
+- ✅ SARIF security reporting
+
+For security concerns, please review our [Security Policy](SECURITY.md).
+
 Now that you’ve created a Salesforce DX project, what’s next? Here are some documentation resources to get you started.
 
 ## How Do You Plan to Deploy Your Changes?
