@@ -1,0 +1,87 @@
+---
+name: Deploy to Production
+
+"on":
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests before deployment
+        run: npm run test
+
+      - name: Install Salesforce CLI
+        run: |
+          npm install -g @salesforce/cli
+          sf version
+
+      - name: Authenticate to Salesforce Production
+        run: |
+          echo "${{ secrets.PROD_SALESFORCE_JWT_KEY }}" > server.key
+          sf org login jwt \
+            --client-id ${{ secrets.PROD_SALESFORCE_CLIENT_ID }} \
+            --jwt-key-file server.key \
+            --username ${{ secrets.PROD_SALESFORCE_USERNAME }} \
+            --instance-url ${{ secrets.PROD_SALESFORCE_INSTANCE_URL || 'https://login.salesforce.com' }} \
+            --alias Production
+        env:
+          PROD_SALESFORCE_JWT_KEY: ${{ secrets.PROD_SALESFORCE_JWT_KEY }}
+          PROD_SALESFORCE_CLIENT_ID: ${{ secrets.PROD_SALESFORCE_CLIENT_ID }}
+          PROD_SALESFORCE_USERNAME: ${{ secrets.PROD_SALESFORCE_USERNAME }}
+
+      - name: Deploy to Production (Check Only)
+        if: github.event_name == 'pull_request'
+        run: |
+          sf project deploy start \
+            --source-dir force-app \
+            --target-org Production \
+            --check-only \
+            --test-level RunLocalTests
+
+      - name: Deploy to Production
+        if: github.event_name != 'pull_request'
+        run: |
+          sf project deploy start \
+            --source-dir force-app \
+            --target-org Production \
+            --test-level RunLocalTests
+
+      - name: Run post-deployment tests
+        if: github.event_name != 'pull_request'
+        run: |
+          sf apex run test \
+            --target-org Production \
+            --wait 10 \
+            --result-format human \
+            --code-coverage
+
+      - name: Clean up
+        if: always()
+        run: rm -f server.key

@@ -1,0 +1,67 @@
+---
+name: Code Quality
+
+"on":
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run weekly on Sundays at 2 AM UTC
+    - cron: "0 2 * * 0"
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch full history for better analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Prettier check
+        run: npm run prettier:verify
+
+      - name: Run ESLint with reporting
+        run: |
+          npm run lint -- --format json --output-file eslint-report.json || true
+          npm run lint
+
+      - name: Install PMD
+        run: |
+          wget -q https://github.com/pmd/pmd/releases/download/pmd_releases%2F7.0.0/pmd-dist-7.0.0-bin.zip
+          unzip -q pmd-dist-7.0.0-bin.zip
+
+      - name: Run PMD Analysis on Apex
+        run: |
+          ./pmd-bin-7.0.0/bin/pmd check \
+            --dir force-app/main/default/classes \
+            --rulesets category/apex/security.xml,category/apex/performance.xml,category/apex/bestpractices.xml \
+            --format text \
+            --report-file pmd-report.txt \
+            --no-fail-on-violation || true
+          cat pmd-report.txt || echo "No PMD violations found"
+
+      - name: Run dependency vulnerability check
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Upload code quality artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-quality-reports
+          path: |
+            eslint-report.json
+            pmd-report.txt
+          retention-days: 30

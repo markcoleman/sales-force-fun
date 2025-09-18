@@ -1,0 +1,38 @@
+---
+name: Format Check
+
+"on":
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting
+        run: |
+          echo "Checking code formatting with Prettier..."
+          if npm run prettier:verify; then
+            echo "✅ All files are properly formatted!"
+          else
+            echo "❌ Some files need formatting. Please run 'npm run prettier' locally."
+            echo ""
+            echo "The pre-commit hooks should automatically format your code when you commit."
+            echo "If you're seeing this error, make sure husky is properly installed:"
+            echo "  npm install"
+            echo "  npm run prepare"
+            exit 1
+          fi
