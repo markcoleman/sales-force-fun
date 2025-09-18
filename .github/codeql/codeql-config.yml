@@ -1,0 +1,82 @@
+# CodeQL Configuration for Enhanced Security Analysis
+name: "Salesforce Security Analysis"
+
+# Disable the default queries and use security-focused ones
+disable-default-queries: false
+
+# Include additional query suites for comprehensive security analysis
+queries:
+  - name: security-extended
+    uses: security-extended
+  - name: security-and-quality
+    uses: security-and-quality
+
+# Configure paths to analyze
+paths:
+  - force-app/
+  - scripts/
+  - "**/*.js"
+  - "**/*.cls"
+
+# Exclude paths that don't need security analysis
+paths-ignore:
+  - node_modules/
+  - coverage/
+  - .sfdx/
+  - .git/
+  - "**/*.test.js"
+  - "**/__tests__/**"
+  - "**/*.md"
+  - "**/*.json"
+  - "**/*.xml"
+
+# Language-specific configurations
+javascript:
+  # Include TypeScript files if present
+  identify-by-name:
+    - "*.js"
+    - "*.jsx"
+    - "*.ts"
+    - "*.tsx"
+    - "*.vue"
+
+  # Security-focused analysis
+  security-severity: "high"
+
+  # Custom security queries for Salesforce/Lightning
+  custom-queries:
+    - name: salesforce-security
+      description: "Salesforce-specific security checks"
+      # Add custom queries for SOQL injection, XSS in LWC, etc.
+
+# Analysis configuration
+analysis:
+  # Increase timeout for thorough analysis
+  timeout: 900
+
+  # Memory allocation
+  ram: 4096
+
+  # Security-focused settings
+  security:
+    # Enable all security-related queries
+    enable-all-security-queries: true
+
+    # Treat security issues as errors
+    fail-on-security-issues: false # Set to true in production
+
+    # Minimum security severity to report
+    min-severity: "medium"
+
+# Results configuration
+results:
+  # Upload to Security tab
+  upload-to-security-tab: true
+
+  # Create detailed security report
+  detailed-security-report: true
+
+  # SARIF output configuration
+  sarif:
+    include-source-code: false
+    category: "security-analysis"

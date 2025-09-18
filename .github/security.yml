@@ -1,0 +1,54 @@
+# GitHub Security Configuration
+# This file configures security-related settings for the repository
+
+# Security policy reference
+security_policy:
+  file: SECURITY.md
+
+# Preferred security contact methods
+contact:
+  - email: security@example.com # Update with actual contact
+  - github: markcoleman
+
+# Security features configuration
+features:
+  # Enable dependency vulnerability alerts
+  dependency_alerts: true
+
+  # Enable security updates via Dependabot
+  security_updates: true
+
+  # Enable secret scanning
+  secret_scanning: true
+
+  # Enable push protection for secrets
+  secret_scanning_push_protection: true
+
+  # Enable code scanning via CodeQL
+  code_scanning: true
+
+  # Enable private vulnerability reporting
+  private_vulnerability_reporting: true
+
+# Issue templates for security reports
+issue_templates:
+  security_issue:
+    name: Security Vulnerability Report
+    about: Report a security vulnerability
+    labels: ["security", "needs-triage"]
+    assignees: ["markcoleman"]
+
+# Branch protection recommendations
+branch_protection:
+  main:
+    required_status_checks:
+      - "CodeQL"
+      - "CI"
+      - "Code Quality"
+      - "Dependency Review"
+    required_reviews: 1
+    dismiss_stale_reviews: true
+    require_code_owner_reviews: true
+    restrict_pushes: true
+    allow_force_pushes: false
+    allow_deletions: false

@@ -1,23 +1,83 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for more information:
-# https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
-# https://containers.dev/guide/dependabot
+# Dependabot configuration for comprehensive dependency management
+# This configuration covers multiple ecosystems and includes security-focused settings
+# For more information: https://docs.github.com/github/administering-a-repository/configuration-options-for-dependency-updates
 
 version: 2
 updates:
+  # Development Containers
   - package-ecosystem: "devcontainers"
     directory: "/"
     schedule:
       interval: weekly
-
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     reviewers:
       - "markcoleman"
     commit-message:
-      prefix: "chore"
+      prefix: "chore(devcontainer)"
       include: "scope"
+
+  # npm packages (main application dependencies)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: daily
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "markcoleman"
+    assignees:
+      - "markcoleman"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Enable security updates with higher priority
+    allow:
+      - dependency-type: "all"
+    # Group non-security updates to reduce noise
+    groups:
+      eslint:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+      salesforce:
+        patterns:
+          - "@salesforce/*"
+          - "sfdx-*"
+      testing:
+        patterns:
+          - "*jest*"
+          - "@testing-library/*"
+      formatting:
+        patterns:
+          - "prettier*"
+          - "@prettier/*"
+
+  # GitHub Actions workflow dependencies
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: "monday"
+      time: "04:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "markcoleman"
+    commit-message:
+      prefix: "chore(actions)"
+      include: "scope"
+    # Group related actions together
+    groups:
+      checkout-setup:
+        patterns:
+          - "actions/checkout"
+          - "actions/setup-*"
+      security-actions:
+        patterns:
+          - "github/codeql-action"
+          - "ossf/scorecard-action"
+      upload-actions:
+        patterns:
+          - "actions/upload-*"
+          - "codecov/codecov-action"

@@ -1,0 +1,67 @@
+---
+name: "CodeQL Advanced Security Analysis"
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run CodeQL analysis weekly on Mondays at 6 AM UTC
+    - cron: "0 6 * * 1"
+
+jobs:
+  analyze:
+    name: Analyze Code Security
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ["javascript"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+          # Override language selection by uncommenting this and choosing your languages
+          # languages: javascript, typescript, python, java, cpp, csharp, go, ruby, swift
+
+          # Use custom queries for enhanced security analysis
+          queries: +security-and-quality
+
+          # Specify CodeQL configuration file (optional)
+          # config-file: ./.github/codeql/codeql-config.yml
+
+      - name: Setup Node.js for JavaScript analysis
+        if: matrix.language == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies for JavaScript analysis
+        if: matrix.language == 'javascript'
+        run: |
+          npm ci --ignore-scripts
+          # Avoid running prepare scripts that might interfere with analysis
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{matrix.language}}"
+
+      - name: Upload CodeQL results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: ../results/javascript.sarif
+        continue-on-error: true

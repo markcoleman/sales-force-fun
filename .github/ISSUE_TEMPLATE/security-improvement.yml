@@ -1,0 +1,91 @@
+name: 🛡️ Security Improvement
+description: Suggest a security improvement or enhancement
+title: "[SECURITY ENHANCEMENT] "
+labels: ["security", "enhancement", "needs-review"]
+assignees:
+  - markcoleman
+
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Security Area
+      description: Which area of security does this improvement relate to?
+      options:
+        - Code Security (Static Analysis, Linting)
+        - Dependency Management
+        - CI/CD Security
+        - Authentication/Authorization
+        - Data Protection
+        - Salesforce Security (CRUD/FLS, Sharing)
+        - Infrastructure Security
+        - Documentation/Policy
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: current-state
+    attributes:
+      label: Current Security State
+      description: Describe the current security implementation
+      placeholder: How is this security aspect currently handled?
+    validations:
+      required: true
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Proposed Improvement
+      description: What security improvement are you suggesting?
+      placeholder: Describe the security improvement you'd like to see...
+    validations:
+      required: true
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Security Benefits
+      description: What security benefits would this improvement provide?
+      placeholder: |
+        - Improved protection against...
+        - Better compliance with...
+        - Enhanced monitoring of...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority Level
+      description: How important is this security improvement?
+      options:
+        - Low - Nice to have
+        - Medium - Should implement
+        - High - Important for security
+        - Critical - Essential security improvement
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: Implementation Suggestions
+      description: Do you have ideas on how to implement this?
+      placeholder: |
+        Suggestions for implementation:
+        - Tools or libraries to use
+        - Configuration changes needed
+        - Workflow modifications required
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: Additional Resources
+      description: Any relevant documentation, articles, or examples?
+      placeholder: |
+        Links to:
+        - Documentation
+        - Best practices guides  
+        - Example implementations
+        - Security standards/compliance requirements
