@@ -1,7 +1,7 @@
 ---
 name: Format Check
 
-"on":
+on:
   pull_request:
     types: [opened, synchronize]
 
